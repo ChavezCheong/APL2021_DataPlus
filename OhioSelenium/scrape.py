@@ -17,7 +17,7 @@ EA_COL = 10
 FILENAME_COL = 12
 
 # Directory Constants
-FOLDER_PATH = r'C:\Users\chave\Desktop\Duke\Data+\OhioSelenium\Scraped Files'
+FOLDER_PATH = r'C:\Users\chave\Desktop\Duke\APL2021_DataPlus\OhioSelenium\Scraped Files'
 FILE_TYPE = '\*'
 
 # Helper Functions
