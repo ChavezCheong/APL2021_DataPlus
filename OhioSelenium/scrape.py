@@ -84,7 +84,7 @@ def returnCustomEA(EA):
 if __name__ == "__main__":
 
     # Load Excel
-    workbook = load_workbook(filename="Mortgage Enforcement Actions Database (Trial).xlsx")
+    workbook = load_workbook(filename=r"C:\Users\chave\Desktop\Duke\APL2021_DataPlus\OhioSelenium\Mortgage Enforcement Actions Database (Trial).xlsx")
     sheet = workbook["Ohio"]
 
     # Test Variables
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     initButton.click()
 
     # for name, categoryName in testList:
-    for rows in range(101,301):
+    for rows in range(1,3476):
         
         print(rows)
         # Boolean check for file downloaded
@@ -202,7 +202,7 @@ if __name__ == "__main__":
 
         driver.get("https://apps2.com.ohio.gov/fiin/enforcementlookup/default.aspx")
         
-    workbook.save("test.xlsx")
+    workbook.save(r"C:\Users\chave\Desktop\Duke\APL2021_DataPlus\OhioSelenium\test.xlsx")
     end = time.time()
     print(end - start)
         
