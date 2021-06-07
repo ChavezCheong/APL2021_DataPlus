@@ -1,4 +1,5 @@
-selenium
-openpyxl
 pandas
-python-docx
+matplotlib
+numpy
+seaborn
+plotly
