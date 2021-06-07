@@ -106,7 +106,7 @@ if __name__ == "__main__":
     initButton.click()
 
     # for name, categoryName in testList:
-    for rows in range(1,3476):
+    for rows in range(3476,6951):
         
         print(rows)
         # Boolean check for file downloaded
@@ -194,12 +194,18 @@ if __name__ == "__main__":
         
         # Fill in filename downloaded if true
         if fileDownloaded:
-            time.sleep(2.5)
-            files = glob.glob(FOLDER_PATH+FILE_TYPE)
-            maxFile = max(files, key=os.path.getctime)
-            fileName = os.path.splitext(os.path.basename(maxFile))[0]
-            sheet.cell(row=rows, column=FILENAME_COL).value = fileName
-
+            try:
+                time.sleep(2.5)
+                files = glob.glob(FOLDER_PATH+FILE_TYPE)
+                maxFile = max(files, key=os.path.getctime)
+                fileName = os.path.splitext(os.path.basename(maxFile))[0]
+                sheet.cell(row=rows, column=FILENAME_COL).value = fileName
+            except FileNotFoundError:
+                time.sleep(2.5)
+                files = glob.glob(FOLDER_PATH+FILE_TYPE)
+                maxFile = max(files, key=os.path.getctime)
+                fileName = os.path.splitext(os.path.basename(maxFile))[0]
+                sheet.cell(row=rows, column=FILENAME_COL).value = fileName
         driver.get("https://apps2.com.ohio.gov/fiin/enforcementlookup/default.aspx")
         
     workbook.save(r"C:\Users\chave\Desktop\Duke\APL2021_DataPlus\OhioSelenium\test.xlsx")
