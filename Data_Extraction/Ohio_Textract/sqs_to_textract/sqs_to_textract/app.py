@@ -31,7 +31,7 @@ def delete_sqs_message(receipt_handle):
     Deletes message from SQS queue.
     Returns a response message
     '''
-    
+        
     #Setting up SQS connection
     LOG.info("Setting up SQS client")
     SQS = boto3.client('sqs')
@@ -144,10 +144,4 @@ def lambda_handler(event, context):
             continue
         
         
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": f"{succeeded_count} jobs successful out of {total_count} jobs",
-            # "location": ip.text.replace("\n", "")
-        }),
-        }
+    LOG.info(f"{succeeded_count} jobs successful out of {total_count} jobs")

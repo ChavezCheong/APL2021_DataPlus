@@ -5,31 +5,52 @@ Amazon S3 Batch Program to run on Ohio PDFs to send files to SQS queue.
 # Handle imports
 import json
 import logging
-from pythonlogging import jsonlogger
 import boto3
+from botocore.client import Config
 import os
+import urllib
+
+# Set up configurations
+config = config = Config(
+            retries = dict(
+                max_attempts = 30
+            )
+        )
 
 # Set up constants
-SQS = boto3.client('sqs')
+SQS = boto3.client('sqs',config=config)
 QUEUE = 'S3_batch_pdf_to_queue'
-
+QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/294491488031/S3_batch_pdf_to_queue"
 
 # Set up logging
 LOG = logging.getLogger()
 LOG.setLevel(logging.INFO)
 logHandler = logging.StreamHandler()
-formatter = jsonlogger.JsonFormatter()
+logHandler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logHandler.setFormatter(formatter)
 LOG.addHandler(logHandler)
 
 
 # Send SQS Message
-def send_sqs_message(msg):
+def send_sqs_message(msg, delay = 0):
     ''' 
-    Sends sqs
+    Sends SQS message containing BucketName and PDFName
     '''
-    pass
-# import requests
+    
+    # Process the message
+    json_msg = json.dumps(msg)
+    LOG.info(f"Message processed:{json_msg}")
+    
+    # Send the SQS message
+    response = SQS.send_message(
+        QueueUrl = QUEUE_URL,
+        MessageBody = json_msg,
+        DelaySeconds = delay
+        )
+        
+    LOG.info("Submitted message to queue: {}".format(json_msg))
+    return response
 
 
 def lambda_handler(event, context):
@@ -54,27 +75,38 @@ def lambda_handler(event, context):
         Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
     """
 
-    LOG.info("event: {}".format(event))
-
     request = {}
-
-    # Parse job parameters
-    # request["jobId"] = event['job']['id']
-    # request["invocationId"] = event['invocationId']
-    # request["invocationSchemaVersion"] = event['invocationSchemaVersion']
-
-    # Task
-    # request["task"] = event['tasks'][0]
-    # request["taskId"] = event['tasks'][0]['taskId']
-    # request["objectName"] = urllib.parse.unquote_plus(event['tasks'][0]['s3Key'])
-    # request["s3VersionId"] = event['tasks'][0]['s3VersionId']
-    # request["s3BucketArn"] = event['tasks'][0]['s3BucketArn']
-    # request["bucketName"] = request["s3BucketArn"].split(':')[-1]
-
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "Completed Batch Job",
-            # "location": ip.text.replace("\n", "")
-        }),
-    }
+    request['pdfName'] = urllib.parse.unquote_plus(event['tasks'][0]['s3Key'])
+    request['bucketName'] = event['tasks'][0]['s3BucketArn'].split(':')[-1]
+    
+    # Get handlers for exceptions
+    taskId = event['tasks'][0]['taskId']
+    invocationId = event['invocationId']
+    invocationSchemaVersion = event['invocationSchemaVersion']
+    
+    # Check if PDF
+    basename = os.path.basename(request["pdfName"])
+    dn, dext = os.path.splitext(basename)
+    ext = dext[1:]
+    LOG.info(f"File extension: {ext}")
+    if ext in ["pdf","PDF"]:
+        response = send_sqs_message(request)
+        LOG.info(response)
+        results = [{
+        'taskId': taskId,
+        'resultCode': 'Succeeded',
+        'resultString': f"{request['pdfName']} from bucket {request['bucketName']} submitted for processing."
+        }]
+        return {
+            'invocationSchemaVersion': invocationSchemaVersion,
+            'treatMissingKeysAs': 'PermanentFailure',
+            'invocationId': invocationId,
+            'results': results
+        }
+    else:
+        return {
+            'invocationSchemaVersion': invocationSchemaVersion,
+            'treatMissingKeysAs': 'PermanentFailure',
+            'invocationId': invocationId,
+            'results': results
+        }
