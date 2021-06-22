@@ -2,11 +2,9 @@
 Over 6300 PDFs of Mortgage Enforcement Actions (MEAs) were stored in an Amazon S3 Bucket. This integrated AWS workflow processes the text of all of them and store them to the corresponding MEA case in the CSV.
 
 ## Workflow
----
 ![AWS Workflow](AWS_Workflow.png)
 
 ## Lambda Functions
----
 1. S3BatchProcessing
    * Receives Lambda invocation from S3 Batch Processing and sends bucket name and object name to SQS queue.
 2. SQS_To_Textract
@@ -41,7 +39,6 @@ Over 6300 PDFs of Mortgage Enforcement Actions (MEAs) were stored in an Amazon S
 
 
 ## Technologies
----
 Project is created with:
 - AWS SDK
 - Boto3
