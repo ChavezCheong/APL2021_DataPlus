@@ -3,8 +3,31 @@ The Ohio Department of Commerce stores their Enforcement Actions on a web search
 
 ![Ohio](Ohio_Web_Page.PNG)
 
+## Usage
+---
+1. Download the scripts into a directory
+2. Create a virtual environment and install ``requirements.txt``
+   * Conda
+     * ``conda create --name <environment name> python``
+     * ``conda activate <environment name>``
+     * ``conda install -file requirements.txt``
+   * Pip
+     * ``pip install -r requirements.txt``
+3. Create a ``Scraped Files`` folder in the same directory
+4. Rename 
+   * Excel Constants
+   * Webpage Constants
+   * Filepaths
+5. Adjust XPaths, Class and Name identifiers
+6. Rework logic for parsing through web page
+7. Run program. Set download folder in browser during pause. Press enter again.
+8. Wait until program has completed running
+9. Complete additional processing
+   * Change word documents to PDFs with ``convert.py``
+> Note: Empty ``WordDocs`` folder first.
 
 ## Technologies
+---
 Project is created with:
 - Selenium
 - OpenPyxl

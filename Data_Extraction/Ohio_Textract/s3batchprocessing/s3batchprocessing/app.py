@@ -1,5 +1,6 @@
 '''
-Amazon S3 Batch Program to run on Ohio PDFs to send files to SQS queue. 
+Author: Chavez Cheong <https://github.com/ChavezCheong>
+Purpose of Script: Amazon S3 Batch Program to run on Ohio PDFs to send files to SQS queue.
 '''
 
 # Handle imports
@@ -54,59 +55,44 @@ def send_sqs_message(msg, delay = 0):
 
 
 def lambda_handler(event, context):
-    """Sample pure Lambda function
+    '''
+    Lambda Entry Point
+    '''
 
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
-
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
-
-    context: object, required
-        Lambda Context runtime methods and attributes
-
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
-
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
-
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
-
+    # Parse JSON input from Batch Job.
     request = {}
     request['pdfName'] = urllib.parse.unquote_plus(event['tasks'][0]['s3Key'])
     request['bucketName'] = event['tasks'][0]['s3BucketArn'].split(':')[-1]
     
     # Get handlers for exceptions
-    taskId = event['tasks'][0]['taskId']
-    invocationId = event['invocationId']
-    invocationSchemaVersion = event['invocationSchemaVersion']
+    task_id = event['tasks'][0]['taskId']
+    invocation_id = event['invocationId']
+    invocation_schema_version = event['invocationSchemaVersion']
     
-    # Check if PDF
-    basename = os.path.basename(request["pdfName"])
-    dn, dext = os.path.splitext(basename)
+    # Check if file is PDF
+    base_name = os.path.basename(request["pdfName"])
+    dn, dext = os.path.splitext(base_name)
     ext = dext[1:]
     LOG.info(f"File extension: {ext}")
     if ext in ["pdf","PDF"]:
+        # Send SQS message
         response = send_sqs_message(request)
         LOG.info(response)
         results = [{
-        'taskId': taskId,
+        'taskId': task_id,
         'resultCode': 'Succeeded',
         'resultString': f"{request['pdfName']} from bucket {request['bucketName']} submitted for processing."
         }]
         return {
-            'invocationSchemaVersion': invocationSchemaVersion,
+            'invocationSchemaVersion': invocation_schema_version,
             'treatMissingKeysAs': 'PermanentFailure',
-            'invocationId': invocationId,
+            'invocationId': invocation_id,
             'results': results
         }
     else:
         return {
-            'invocationSchemaVersion': invocationSchemaVersion,
+            'invocationSchemaVersion': invocation_schema_version,
             'treatMissingKeysAs': 'PermanentFailure',
-            'invocationId': invocationId,
+            'invocationId': invocation_id,
             'results': results
         }

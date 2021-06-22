@@ -1,5 +1,6 @@
 '''
-Amazon Lambda to receive completed Textract requests, retrieve it, process it and then log it.
+Author: Chavez Cheong <https://github.com/ChavezCheong>
+Purpose of Script: Amazon Lambda to receive completed Textract requests, retrieve it, process it and then log it.
 '''
 
 # Handle imports
@@ -7,7 +8,6 @@ import json
 import logging
 import boto3
 import botocore
-import os
 from io import StringIO
 import pandas as pd
 import time
@@ -69,7 +69,7 @@ def change_visibility(receipt_handle):
 
 def write_s3(df):
 	"""
-	Write S3 Bucket
+	Write dataframes to S3 Bucket as CSV files
 	"""
 	csv_buffer = StringIO()
 	df.to_csv(csv_buffer)
@@ -86,7 +86,7 @@ def write_s3(df):
 	LOG.info(f'Result of write to bucket: {OUTPUT_BUCKET} with:\n {response}')
 
 
-def get_textract_job(JobId, file_name):
+def get_textract_job(job_id, file_name):
     '''
     Get Textract job and returns string containing all of it
     '''
@@ -97,16 +97,16 @@ def get_textract_job(JobId, file_name):
     
     # Retrieves Textract File
     try:
-        LOG.info(f"Retrieving job with JobId: {JobId} for file: {file_name}")
-        response = TEXTRACT.get_document_text_detection(JobId= JobId)
-        documentText = ""
+        LOG.info(f"Retrieving job with JobId: {job_id} for file: {file_name}")
+        response = TEXTRACT.get_document_text_detection(JobId= job_id)
+        document_text = ""
         for item in response['Blocks']:
             if item['BlockType'] == "LINE":
-                documentText += item['Text'] + "\n"
-        LOG.info(f"Document text: {documentText}")
+                document_text += item['Text'] + "\n"
+        LOG.info(f"Document text: {document_text}")
     except Exception as error:
         raise error
-    return documentText
+    return document_text
 
 def lambda_handler(event, context):
     '''
@@ -168,7 +168,7 @@ def lambda_handler(event, context):
         else:
             failed_textract_count += 1
             LOG.info(f"Textract Request for file: {file_name} was not successful")
-            # Delete failed Textract message
+            # Delete failed Textract SQS message
             try:
                 response = delete_sqs_message(receipt_handle)
                 LOG.info(f"Successfully deleted SQS message with receipt handle: {receipt_handle} with response: {response}")
@@ -176,7 +176,7 @@ def lambda_handler(event, context):
                 LOG.info(f"Proceeding without deleting SQS message {receipt_handle}")
             continue
     
-    # Write to S3 the CSV
+    # Write the CSV to S3
     LOG.info(f"Attempting to write results to S3 Bucket")
     write_s3(df)
     LOG.info(f"{succeeded_count} jobs successful out of {total_count} jobs. \n {failed_textract_count} number of Textract jobs failed.")

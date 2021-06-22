@@ -1,5 +1,6 @@
 '''
-Amazon Lambda to receive SQS Queue and send document to be processed by Textract 
+Author: Chavez Cheong <https://github.com/ChavezCheong>
+Purpose of Script: Amazon Lambda to receive SQS Queue and send document to be processed by Textract.
 '''
 
 # Handle imports
@@ -7,8 +8,6 @@ import json
 import logging
 import boto3
 import botocore
-import os
-import urllib
 import time
 
 # Set up constants
@@ -29,7 +28,7 @@ LOG.addHandler(logHandler)
 def delete_sqs_message(receipt_handle):
     '''
     Deletes message from SQS queue.
-    Returns a response message
+    Returns a response message or raises an error
     '''
         
     #Setting up SQS connection
@@ -101,15 +100,14 @@ def start_textract_job(pdf, bucket):
     
 def lambda_handler(event, context):
     '''
-    Lambda Entry
+    Lambda Entry Point
     '''
     
     # Keep track of total transactions
     total_count = 0
     succeeded_count = 0
     
-    #LOG.info(f'Processing job, event {event}, context {context}')
-    
+    # Loop through each SQS message polled
     for record in event['Records']:
         total_count += 1
         
@@ -142,6 +140,5 @@ def lambda_handler(event, context):
             # Reset message so lambda can pick it up again
             change_visibility(receipt_handle)
             continue
-        
         
     LOG.info(f"{succeeded_count} jobs successful out of {total_count} jobs")
