@@ -10,14 +10,16 @@ import boto3
 import botocore
 from io import StringIO
 import pandas as pd
+import numpy as np
 import time
 import uuid
+import sys
 
 # Set up constants
 QUEUE = 'queue_completed_textract_jobs'
 QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/294491488031/queue_completed_textract_jobs"
 OUTPUT_BUCKET = "enforcement-actions"
-OUTPUT_PREFIX = "Ohio/processed_pdfs"
+OUTPUT_PREFIX = "Massachusetts/processed_pdfs"
 
 
 # Set up logging
@@ -72,6 +74,8 @@ def write_s3(df):
 	Write dataframes to S3 Bucket as CSV files
 	"""
 	csv_buffer = StringIO()
+	# Remove 6490 character threshold limit
+	np.set_printoptions(threshold=sys.maxsize)
 	df.to_csv(csv_buffer)
 	
 	# Set up S3 Client
@@ -103,7 +107,23 @@ def get_textract_job(job_id, file_name):
         for item in response['Blocks']:
             if item['BlockType'] == "LINE":
                 document_text += item['Text'] + "\n"
-        LOG.info(f"Document text: {document_text}")
+        LOG.info(f"Retrived one set for file: {file_name}")
+        nextToken = None
+        if('NextToken' in response):
+            nextToken = response['NextToken']
+            LOG.info(f"Next token: {nextToken}")
+        while(nextToken):
+            LOG.info("Stopping for new pages in case of throttling")
+            time.sleep(5)
+            response = TEXTRACT.get_document_text_detection(JobId=job_id, NextToken=nextToken)
+            for item in response['Blocks']:
+                if item['BlockType'] == "LINE":
+                    document_text += item['Text'] + "\n"
+            LOG.info(f"Retrived another set for file: {file_name}")
+            nextToken = None
+            if('NextToken' in response):
+                nextToken = response['NextToken']
+                LOG.info(f"Next token: {nextToken}")
     except Exception as error:
         raise error
     return document_text
