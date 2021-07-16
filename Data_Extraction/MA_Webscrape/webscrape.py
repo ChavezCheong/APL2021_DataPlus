@@ -4,13 +4,14 @@ import requests
 import pandas as pd
 import numpy as np
 import re
+import sys
 
 # Set up the dataframe
-df = pd.read_csv(r"C:\Users\chave\Desktop\Duke\APL2021_DataPlus\Data_Extraction\MA_Webscrape\Massachusetts_MEA_Database.csv")
-
+df = pd.read_csv(r"C:\Users\chave\Desktop\Duke\APL2021_DataPlus\Data_Extraction\MA_Webscrape\Massachusetts_MEA_Database_Text_FileName.csv")
+# print(df.columns)
 # Edit the dataframe
-df.drop(['Unnamed: 0', '*Raw Text*'], axis=1, inplace=True)
-df.rename(columns={'URL - to be filled in':'URL'}, inplace=True)
+df.drop(['Unnamed: 0', 'Text'], axis=1, inplace=True)
+df.rename(columns={'URL - to be filled in':'URL','File Name':'Filename'}, inplace=True)
 
 def get_text(row):
     # Get URL
@@ -40,5 +41,5 @@ def get_text(row):
     return np.nan
 
 df['Text'] = df.apply(lambda row : get_text(row), axis=1)
-
+np.set_printoptions(threshold=sys.maxsize)
 df.to_csv(r"C:\Users\chave\Desktop\Duke\APL2021_DataPlus\Data_Extraction\MA_Webscrape\Massachusetts_MEA_Database_Text.csv")

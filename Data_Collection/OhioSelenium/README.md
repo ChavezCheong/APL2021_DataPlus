@@ -4,13 +4,12 @@ The Ohio Department of Commerce stores their Enforcement Actions on a web search
 ![Ohio](Ohio_Web_Page.PNG)
 
 ## Usage
----
 1. Download the scripts into a directory
 2. Create a virtual environment and install ``requirements.txt``
    * Conda
      * ``conda create --name <environment name> python``
      * ``conda activate <environment name>``
-     * ``conda install -file requirements.txt``
+     * ``conda install --file requirements.txt``
    * Pip
      * ``pip install -r requirements.txt``
 3. Create a ``Scraped Files`` folder in the same directory
@@ -27,7 +26,6 @@ The Ohio Department of Commerce stores their Enforcement Actions on a web search
 > Note: Empty ``WordDocs`` folder first.
 
 ## Technologies
----
 Project is created with:
 - Selenium
 - OpenPyxl
