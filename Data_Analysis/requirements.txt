@@ -2,3 +2,8 @@ pandas
 jupyter
 elasticsearch
 nltk
+gensim
+wordcloud
+pyLDAvis
+tqdm
+spacy
