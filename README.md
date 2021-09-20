@@ -49,6 +49,8 @@ With all of Ohio's MEAs on PDFs stored in S3, we built a tech stack with Amazon'
 With the scraped MEA text stored in CSV files for Massachusetts and Ohio, we will be using LogStash to transfer the data into ElasticSearch for analysis and visualization with Kibana.
 
 > Tech Stack
+> - Gensim
+> - Spacy
 > - LogStash
 > - ElasticSearch
 > - Kibana
